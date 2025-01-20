@@ -1,0 +1,17 @@
+name,class,method,description
+File IO,java.io.FileOutputStream,write,向文件中写入数据。
+File IO,java.io.FileInputStream,read,从文件中读取数据。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getString,从共享首选项中读取字符串值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,contains,检查共享首选项中是否存在指定键。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getInt,从共享首选项中读取整数值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getFloat,从共享首选项中读取浮点值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getLong,从共享首选项中读取长整型值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getBoolean,从共享首选项中读取布尔值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getStringSet,从共享首选项中读取字符串集合。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$getStringSet,getStringSet,从共享首选项中读取字符串集合。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putString,向共享首选项中写入字符串值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putInt,向共享首选项中写入整数值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putFloat,向共享首选项中写入浮点值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putBoolean,向共享首选项中写入布尔值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putLong,向共享首选项中写入长整型值。
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,remove,从共享首选项中移除指定键值对。

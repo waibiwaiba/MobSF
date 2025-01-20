@@ -1,0 +1,41 @@
+请你直接把api的说明文字直接附在这个csv文件对应的api的那一行的末尾，相当于在csv里面再添加一列，写api的说明文字。然后请你把添加完api说明文字的csv文件的内容输出给我，我粘贴到文件中。注意需要保留原文件里各个api的顺序不变。
+等有空再做一遍
+name,class,method,description
+Process,android.os.Process,start,启动一个新的进程。
+Process,android.app.ActivityManager,killBackgroundProcesses,终止指定包名的后台进程。
+Process,android.os.Process,killProcess,强制终止指定的进程。
+Command,java.lang.Runtime,exec,运行系统命令或启动新进程。
+Command,java.lang.ProcessBuilder,start,使用ProcessBuilder构建并启动新进程。
+Java Native Interface,java.lang.Runtime,loadLibrary,加载本地库文件。
+Java Native Interface,java.lang.Runtime,load,加载一个指定路径的本地库文件。
+WebView,android.webkit.WebView,loadUrl,加载指定的URL到WebView中。
+WebView,android.webkit.WebView,loadData,直接加载HTML数据字符串到WebView中显示。
+WebView,android.webkit.WebView,loadDataWithBaseURL,加载HTML数据字符串，并附加一个基准URL，用于解析相对路径资源。
+WebView,android.webkit.WebView,addJavascriptInterface,将一个Java对象注入到WebView中，使其能通过JavaScript调用。
+WebView,android.webkit.WebView,evaluateJavascript,在WebView中异步执行JavaScript代码，并获取结果。
+WebView,android.webkit.WebView,postUrl,以POST方式将数据提交到指定的URL。
+WebView,android.webkit.WebView,postWebMessage,向WebView发送消息，支持更高级的跨域通信。
+WebView,android.webkit.WebView,savePassword,保存用户的网页密码信息（已废弃，建议不要使用）。
+WebView,android.webkit.WebView,setHttpAuthUsernamePassword,设置HTTP身份验证的用户名和密码。
+WebView,android.webkit.WebView,getHttpAuthUsernamePassword,获取HTTP身份验证的用户名和密码。
+WebView,android.webkit.WebView,setWebContentsDebuggingEnabled,启用WebView内容的调试功能（主要用于开发环境）。
+File IO,libcore.io.IoBridge,open,打开文件或套接字，用于I/O操作。
+File IO,android.content.ContextWrapper,openFileInput,打开一个应用私有的文件进行读取。
+File IO,android.content.ContextWrapper,openFileOutput,打开一个应用私有的文件进行写入。
+File IO,android.content.ContextWrapper,deleteFile,删除应用私有目录中的指定文件。
+Database,android.content.ContextWrapper,openOrCreateDatabase,打开或创建一个数据库文件。
+Database,android.content.ContextWrapper,databaseList,获取应用程序已创建的数据库列表。
+Database,android.content.ContextWrapper,deleteDatabase,删除应用程序指定的数据库。
+Database,android.database.sqlite.SQLiteDatabase,execSQL,执行SQL命令（如创建表或插入数据）。
+Database,android.database.sqlite.SQLiteDatabase,deleteDatabase,删除SQLite数据库文件。
+Database,android.database.sqlite.SQLiteDatabase,getPath,获取数据库文件路径。
+Database,android.database.sqlite.SQLiteDatabase,insert,插入一条记录到数据库表中。
+Database,android.database.sqlite.SQLiteDatabase,query,查询数据库中的表，并返回Cursor对象。
+Database,android.database.sqlite.SQLiteDatabase,rawQuery,执行原生SQL查询语句。
+IPC,android.content.ContextWrapper,sendBroadcast,发送广播消息。
+IPC,android.content.ContextWrapper,registerReceiver,注册广播接收器。
+Binder,android.app.ActivityThread,handleReceiver,处理广播接收器的回调。
+Device Info,android.telephony.TelephonyManager,getDeviceId,获取设备的唯一标识符（已废弃，建议使用更安全的标识符）。
+Device Info,android.telephony.TelephonyManager,getSimSerialNumber,获取SIM卡的序列号。
+Crypto,javax.crypto.Cipher,doFinal,执行加密或解密操作。
+Crypto,java.security.MessageDigest,digest,生成消息摘要（哈希值）。

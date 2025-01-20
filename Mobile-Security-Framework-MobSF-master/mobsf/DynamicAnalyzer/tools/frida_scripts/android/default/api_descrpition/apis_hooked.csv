@@ -1,0 +1,105 @@
+name,class,method
+Base64,android.util.Base64,decode
+Base64,android.util.Base64,encode
+Base64,android.util.Base64,encodeToString
+Binder,android.app.Activity,startActivity
+Binder,android.app.ActivityThread,handleReceiver
+Binder,android.app.ContextImpl,registerReceiver
+Command,java.lang.ProcessBuilder,start
+Command,java.lang.Runtime,exec
+Crypto,javax.crypto.Cipher,doFinal
+Crypto,javax.crypto.spec.SecretKeySpec,$init
+Crypto - Hash,java.security.MessageDigest,digest
+Crypto - Hash,java.security.MessageDigest,update
+Database,android.content.ContextWrapper,databaseList
+Database,android.content.ContextWrapper,deleteDatabase
+Database,android.content.ContextWrapper,openOrCreateDatabase
+Database,android.database.sqlite.SQLiteDatabase,compileStatement
+Database,android.database.sqlite.SQLiteDatabase,create
+Database,android.database.sqlite.SQLiteDatabase,deleteDatabase
+Database,android.database.sqlite.SQLiteDatabase,execSQL
+Database,android.database.sqlite.SQLiteDatabase,getPath
+Database,android.database.sqlite.SQLiteDatabase,insert
+Database,android.database.sqlite.SQLiteDatabase,insertOrThrow
+Database,android.database.sqlite.SQLiteDatabase,insertWithOnConflict
+Database,android.database.sqlite.SQLiteDatabase,openDatabase
+Database,android.database.sqlite.SQLiteDatabase,openOrCreateDatabase
+Database,android.database.sqlite.SQLiteDatabase,query
+Database,android.database.sqlite.SQLiteDatabase,queryWithFactory
+Database,android.database.sqlite.SQLiteDatabase,rawQuery
+Database,android.database.sqlite.SQLiteDatabase,rawQueryWithFactory
+Database,android.database.sqlite.SQLiteDatabase,update
+Database,android.database.sqlite.SQLiteDatabase,updateWithOnConflict
+Device Data,android.accounts.AccountManager,getAccounts
+Device Data,android.accounts.AccountManager,getAccountsByType
+Device Data,android.app.ApplicationPackageManager,getInstalledPackages
+Device Data,android.content.ContentResolver,delete
+Device Data,android.content.ContentResolver,insert
+Device Data,android.content.ContentResolver,query
+Device Data,android.content.ContentResolver,registerContentObserver
+Device Data,android.location.Location,getLatitude
+Device Data,android.location.Location,getLongitude
+Device Data,android.media.AudioRecord,startRecording
+Device Data,android.media.MediaRecorder,start
+Device Data,android.os.SystemProperties,get
+Device Info,android.content.pm.PackageManager,getInstalledApplications
+Device Info,android.content.pm.PackageManager,getInstalledModules
+Device Info,android.content.pm.PackageManager,getInstalledPackages
+Device Info,android.content.pm.PackageManager,getInstallerPackageName
+Device Info,android.net.wifi.WifiInfo,getBSSID
+Device Info,android.net.wifi.WifiInfo,getIpAddress
+Device Info,android.net.wifi.WifiInfo,getMacAddress
+Device Info,android.net.wifi.WifiInfo,getNetworkId
+Device Info,android.os.Debug,isDebuggerConnected
+Device Info,android.telephony.TelephonyManager,getDeviceId
+Device Info,android.telephony.TelephonyManager,getDeviceSoftwareVersion
+Device Info,android.telephony.TelephonyManager,getLine1Number
+Device Info,android.telephony.TelephonyManager,getNetworkCountryIso
+Device Info,android.telephony.TelephonyManager,getNetworkOperator
+Device Info,android.telephony.TelephonyManager,getNetworkOperatorName
+Device Info,android.telephony.TelephonyManager,getSimCountryIso
+Device Info,android.telephony.TelephonyManager,getSimOperatorName
+Device Info,android.telephony.TelephonyManager,getSimSerialNumber
+Device Info,android.telephony.TelephonyManager,getSubscriberId
+Dex Class Loader,dalvik.system.BaseDexClassLoader,findLibrary
+Dex Class Loader,dalvik.system.BaseDexClassLoader,findResource
+Dex Class Loader,dalvik.system.BaseDexClassLoader,findResources
+Dex Class Loader,dalvik.system.DexClassLoader,$init
+Dex Class Loader,dalvik.system.DexFile,loadClass
+Dex Class Loader,dalvik.system.DexFile,loadDex
+File IO,android.content.ContextWrapper,deleteFile
+File IO,android.content.ContextWrapper,openFileInput
+File IO,android.content.ContextWrapper,openFileOutput
+File IO,libcore.io.IoBridge,open
+IPC,android.content.ContextWrapper,registerReceiver
+IPC,android.content.ContextWrapper,sendBroadcast
+IPC,android.content.ContextWrapper,sendStickyBroadcast
+IPC,android.content.ContextWrapper,startActivity
+IPC,android.content.ContextWrapper,startService
+IPC,android.content.ContextWrapper,stopService
+Java Native Interface,java.lang.Runtime,load
+Java Native Interface,java.lang.Runtime,loadLibrary
+Network,com.android.okhttp.internal.http.HttpURLConnectionImpl,getInputStream
+Network,com.android.okhttp.internal.huc.HttpURLConnectionImpl,getInputStream
+Network,java.net.URL,openConnection
+Network,org.apache.http.impl.client.AbstractHttpClient,execute
+Process,android.app.ActivityManager,killBackgroundProcesses
+Process,android.os.Process,killProcess
+Process,android.os.Process,start
+SMS,android.telephony.SmsManager,sendMultipartTextMessage
+SMS,android.telephony.SmsManager,sendTextMessage
+System Manager,android.app.ApplicationPackageManager,setComponentEnabledSetting
+System Manager,android.app.NotificationManager,notify
+System Manager,android.content.BroadcastReceiver,abortBroadcast
+System Manager,android.telephony.TelephonyManager,listen
+WebView,android.webkit.WebView,addJavascriptInterface
+WebView,android.webkit.WebView,evaluateJavascript
+WebView,android.webkit.WebView,getHttpAuthUsernamePassword
+WebView,android.webkit.WebView,loadData
+WebView,android.webkit.WebView,loadDataWithBaseURL
+WebView,android.webkit.WebView,loadUrl
+WebView,android.webkit.WebView,postUrl
+WebView,android.webkit.WebView,postWebMessage
+WebView,android.webkit.WebView,savePassword
+WebView,android.webkit.WebView,setHttpAuthUsernamePassword
+WebView,android.webkit.WebView,setWebContentsDebuggingEnabled

@@ -1,0 +1,105 @@
+name,class,method,description
+Base64,android.util.Base64,decode,Base64解码
+Base64,android.util.Base64,encode,Base64编码
+Base64,android.util.Base64,encodeToString,Base64编码为字符串
+Binder,android.app.Activity,startActivity,启动Activity
+Binder,android.app.ActivityThread,handleReceiver,处理Receiver
+Binder,android.app.ContextImpl,registerReceiver,注册Receiver
+Command,java.lang.ProcessBuilder,start,启动进程
+Command,java.lang.Runtime,exec,执行命令
+Crypto,javax.crypto.Cipher,doFinal,加密操作的最终步骤
+Crypto,javax.crypto.spec.SecretKeySpec,$init,初始化密钥规范
+Crypto - Hash,java.security.MessageDigest,digest,哈希摘要
+Crypto - Hash,java.security.MessageDigest,update,更新哈希摘要
+Database,android.content.ContextWrapper,databaseList,列出数据库
+Database,android.content.ContextWrapper,deleteDatabase,删除数据库
+Database,android.content.ContextWrapper,openOrCreateDatabase,打开或创建数据库
+Database,android.database.sqlite.SQLiteDatabase,compileStatement,编译SQL语句
+Database,android.database.sqlite.SQLiteDatabase,create,创建数据库
+Database,android.database.sqlite.SQLiteDatabase,deleteDatabase,删除数据库
+Database,android.database.sqlite.SQLiteDatabase,execSQL,执行SQL
+Database,android.database.sqlite.SQLiteDatabase,getPath,获取数据库路径
+Database,android.database.sqlite.SQLiteDatabase,insert,插入数据
+Database,android.database.sqlite.SQLiteDatabase,insertOrThrow,插入数据或抛出异常
+Database,android.database.sqlite.SQLiteDatabase,insertWithOnConflict,处理冲突的插入
+Database,android.database.sqlite.SQLiteDatabase,openDatabase,打开数据库
+Database,android.database.sqlite.SQLiteDatabase,openOrCreateDatabase,打开或创建数据库
+Database,android.database.sqlite.SQLiteDatabase,query,查询数据
+Database,android.database.sqlite.SQLiteDatabase,queryWithFactory,使用工厂查询数据
+Database,android.database.sqlite.SQLiteDatabase,rawQuery,原生查询
+Database,android.database.sqlite.SQLiteDatabase,rawQueryWithFactory,使用工厂的原生查询
+Database,android.database.sqlite.SQLiteDatabase,update,更新数据
+Database,android.database.sqlite.SQLiteDatabase,updateWithOnConflict,处理冲突的更新
+Device Data,android.accounts.AccountManager,getAccounts,获取账户信息
+Device Data,android.accounts.AccountManager,getAccountsByType,按类型获取账户信息
+Device Data,android.app.ApplicationPackageManager,getInstalledPackages,获取已安装的包
+Device Data,android.content.ContentResolver,delete,删除数据
+Device Data,android.content.ContentResolver,insert,插入数据
+Device Data,android.content.ContentResolver,query,查询数据
+Device Data,android.content.ContentResolver,registerContentObserver,注册内容观察者
+Device Data,android.location.Location,getLatitude,获取纬度
+Device Data,android.location.Location,getLongitude,获取经度
+Device Data,android.media.AudioRecord,startRecording,开始录音
+Device Data,android.media.MediaRecorder,start,开始录制
+Device Data,android.os.SystemProperties,get,获取系统属性
+Device Info,android.content.pm.PackageManager,getInstalledApplications,获取已安装的应用
+Device Info,android.content.pm.PackageManager,getInstalledModules,获取已安装的模块
+Device Info,android.content.pm.PackageManager,getInstalledPackages,获取已安装的包
+Device Info,android.content.pm.PackageManager,getInstallerPackageName,获取安装者包名
+Device Info,android.net.wifi.WifiInfo,getBSSID,获取BSSID
+Device Info,android.net.wifi.WifiInfo,getIpAddress,获取IP地址
+Device Info,android.net.wifi.WifiInfo,getMacAddress,获取MAC地址
+Device Info,android.net.wifi.WifiInfo,getNetworkId,获取网络ID
+Device Info,android.os.Debug,isDebuggerConnected,检查调试器是否连接
+Device Info,android.telephony.TelephonyManager,getDeviceId,获取设备ID
+Device Info,android.telephony.TelephonyManager,getDeviceSoftwareVersion,获取设备软件版本
+Device Info,android.telephony.TelephonyManager,getLine1Number,获取线路1号码
+Device Info,android.telephony.TelephonyManager,getNetworkCountryIso,获取网络国家ISO
+Device Info,android.telephony.TelephonyManager,getNetworkOperator,获取网络运营商
+Device Info,android.telephony.TelephonyManager,getNetworkOperatorName,获取网络运营商名称
+Device Info,android.telephony.TelephonyManager,getSimCountryIso,获取SIM卡国家ISO
+Device Info,android.telephony.TelephonyManager,getSimOperatorName,获取SIM卡运营商名称
+Device Info,android.telephony.TelephonyManager,getSimSerialNumber,获取SIM卡序列号
+Device Info,android.telephony.TelephonyManager,getSubscriberId,获取订阅者ID
+Dex Class Loader,dalvik.system.BaseDexClassLoader,findLibrary,查找库
+Dex Class Loader,dalvik.system.BaseDexClassLoader,findResource,查找资源
+Dex Class Loader,dalvik.system.BaseDexClassLoader,findResources,查找资源
+Dex Class Loader,dalvik.system.DexClassLoader,$init,初始化DexClassLoader
+Dex Class Loader,dalvik.system.DexFile,loadClass,加载类
+Dex Class Loader,dalvik.system.DexFile,loadDex,加载Dex文件
+File IO,android.content.ContextWrapper,deleteFile,删除文件
+File IO,android.content.ContextWrapper,openFileInput,打开文件输入
+File IO,android.content.ContextWrapper,openFileOutput,打开文件输出
+File IO,libcore.io.IoBridge,open,打开文件I/O
+IPC,android.content.ContextWrapper,registerReceiver,注册Receiver
+IPC,android.content.ContextWrapper,sendBroadcast,发送广播
+IPC,android.content.ContextWrapper,sendStickyBroadcast,发送粘性广播
+IPC,android.content.ContextWrapper,startActivity,启动Activity
+IPC,android.content.ContextWrapper,startService,启动服务
+IPC,android.content.ContextWrapper,stopService,停止服务
+Java Native Interface,java.lang.Runtime,load,加载Java本地库
+Java Native Interface,java.lang.Runtime,loadLibrary,加载本地库
+Network,com.android.okhttp.internal.http.HttpURLConnectionImpl,getInputStream,获取输入流
+Network,com.android.okhttp.internal.huc.HttpURLConnectionImpl,getInputStream,获取输入流
+Network,java.net.URL,openConnection,打开连接
+Network,org.apache.http.impl.client.AbstractHttpClient,execute,执行HTTP请求
+Process,android.app.ActivityManager,killBackgroundProcesses,杀死后台进程
+Process,android.os.Process,killProcess,杀死进程
+Process,android.os.Process,start,启动进程
+SMS,android.telephony.SmsManager,sendMultipartTextMessage,发送多部分文本消息
+SMS,android.telephony.SmsManager,sendTextMessage,发送文本消息
+System Manager,android.app.ApplicationPackageManager,setComponentEnabledSetting,设置组件启用状态
+System Manager,android.app.NotificationManager,notify,发送通知
+System Manager,android.content.BroadcastReceiver,abortBroadcast,终止广播
+System Manager,android.telephony.TelephonyManager,listen,监听电话状态
+WebView,android.webkit.WebView,addJavascriptInterface,添加JavaScript接口
+WebView,android.webkit.WebView,evaluateJavascript,评估JavaScript
+WebView,android.webkit.WebView,getHttpAuthUsernamePassword,获取HTTP认证用户名和密码
+WebView,android.webkit.WebView,loadData,加载数据
+WebView,android.webkit.WebView,loadDataWithBaseURL,带基础URL加载数据
+WebView,android.webkit.WebView,loadUrl,加载URL
+WebView,android.webkit.WebView,postUrl,POST URL
+WebView,android.webkit.WebView,postWebMessage,发送Web消息
+WebView,android.webkit.WebView,savePassword,保存密码
+WebView,android.webkit.WebView,setHttpAuthUsernamePassword,设置HTTP认证用户名和密码
+WebView,android.webkit.WebView,setWebContentsDebuggingEnabled,启用WebView调试

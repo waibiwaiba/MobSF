@@ -1,0 +1,17 @@
+name,class,method
+File IO,java.io.FileInputStream,read
+File IO,java.io.FileOutputStream,write
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,contains
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getBoolean
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getFloat
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getInt
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getLong
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getString
+File IO - Shared Preferences,android.app.SharedPreferencesImpl,getStringSet
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putBoolean
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putFloat
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putInt
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putLong
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putString
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,putStringSet
+File IO - Shared Preferences,android.app.SharedPreferencesImpl$EditorImpl,remove
