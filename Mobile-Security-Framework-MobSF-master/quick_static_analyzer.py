@@ -7,8 +7,12 @@ import logging
 import zipfile
 import shutil
 import requests
+import logging
 from pathlib import Path
-import tempfile
+from json import load
+
+
+logger = logging.getLogger(__name__)
 
 # 设置Django环境
 sys.path.append('F:/MobSFCODE/Mobile-Security-Framework-MobSF-master/mobsf')
@@ -16,101 +20,114 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mobsf.MobSF.settings")
 django.setup()
 
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid, RecentScansDB
-from mobsf.MobSF.utils import get_md5
+from mobsf.MobSF.utils import get_md5, is_file_exists
 
 class QuickStaticAnalyzer:
     def __init__(self):
         self.api_key = "SeeWhatYouHaveRatherWhatYouDoNotHave"
         self.headers = {"Authorization": self.api_key}
         self.server = "http://localhost:8000"
+        self.mobsf_root = Path('F:/MobSFCODE/Mobile-Security-Framework-MobSF-master/mobsf')
         
+    def handle_xapk(self, app_dic):
+        """基于MobSF的XAPK处理方法"""
+        data = None
+        checksum = app_dic['md5']
+        xapk = Path(app_dic['app_dir']) / f'{checksum}.xapk'
+        apk = Path(app_dic['app_dir']) / f'{checksum}.apk'
+        
+        # 解压XAPK
+        with zipfile.ZipFile(xapk, 'r') as zf:
+            files = zf.namelist()
+            if 'manifest.json' not in files:
+                logger.error('Manifest file not found in XAPK')
+                return False
+            # 提取manifest.json
+            zf.extract('manifest.json', app_dic['app_dir'])
+            
+        # 读取manifest
+        manifest_path = Path(app_dic['app_dir']) / 'manifest.json'
+        with open(manifest_path, encoding='utf8', errors='ignore') as f:
+            data = load(f)
+            
+        if not data:
+            logger.error('Manifest file is empty')
+            return False
+            
+        apks = data.get('split_apks')
+        if not apks:
+            logger.error('Split APKs not found')
+            return False
+            
+        # 提取base APK
+        with zipfile.ZipFile(xapk, 'r') as zf:
+            for a in apks:
+                if a['id'] == 'base':
+                    base_apk = a['file']
+                    zf.extract(base_apk, app_dic['app_dir'])
+                    base_apk_path = Path(app_dic['app_dir']) / base_apk
+                    if base_apk_path.exists():
+                        shutil.move(base_apk_path, apk)
+                        return True
+                        
+        return False
+
     def get_package_name(self, apk_path):
-        """使用aapt获取包名"""
+        """使用AndroidManifest.xml获取包名"""
         try:
             import subprocess
-            cmd = ['aapt', 'dump', 'badging', apk_path]
-            output = subprocess.check_output(cmd).decode('utf-8', errors='ignore')
+            from xml.dom import minidom
+
+            # 使用aapt获取AndroidManifest.xml
+            cmd = ['aapt', 'dump', 'xmltree', apk_path, 'AndroidManifest.xml']
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8', errors='ignore')
             
-            # 在输出中查找包名
+            # 解析输出，查找package属性
             for line in output.split('\n'):
-                if line.startswith('package:'):
-                    items = line.split(' ')
-                    for item in items:
-                        if item.startswith('name='):
-                            return item.split('=')[1].strip("'")
+                if 'package=' in line:
+                    # 使用正则表达式或字符串处理提取包名
+                    package = line.split('package="')[1].split('"')[0]
+                    return package
+                    
             return None
         except Exception as e:
             logging.error(f"Error getting package name: {str(e)}")
             return None
 
-    def extract_xapk(self, xapk_path):
-        """从XAPK中提取主APK文件"""
-        try:
-            # 创建临时目录
-            temp_dir = tempfile.mkdtemp()
-            logging.info(f"Extracting XAPK to {temp_dir}")
-
-            # 解压XAPK
-            with zipfile.ZipFile(xapk_path, 'r') as zip_ref:
-                zip_ref.extractall(temp_dir)
-
-            # 读取manifest.json
-            manifest_path = os.path.join(temp_dir, 'manifest.json')
-            if not os.path.exists(manifest_path):
-                raise Exception("manifest.json not found in XAPK")
-
-            with open(manifest_path) as f:
-                manifest = json.load(f)
-
-            # 获取主APK文件名
-            main_apk = None
-            if 'split_apks' in manifest:  # 新格式
-                for apk in manifest['split_apks']:
-                    if apk.get('id') == 'base':
-                        main_apk = apk.get('file')
-                        break
-            else:  # 旧格式
-                main_apk = manifest.get('package_name') + '.apk'
-
-            if not main_apk or not os.path.exists(os.path.join(temp_dir, main_apk)):
-                # 尝试查找任何.apk文件
-                apk_files = [f for f in os.listdir(temp_dir) if f.endswith('.apk')]
-                if apk_files:
-                    main_apk = apk_files[0]
-                else:
-                    raise Exception("No APK file found in XAPK")
-
-            # 复制主APK到临时文件
-            temp_apk = os.path.join(temp_dir, "temp_main.apk")
-            shutil.copy2(os.path.join(temp_dir, main_apk), temp_apk)
-            
-            return temp_apk, temp_dir
-            
-        except Exception as e:
-            logging.error(f"Error extracting XAPK: {str(e)}")
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
-            return None, None
-
     def quick_save_for_dynamic(self, file_path):
         """保存必要的数据到数据库"""
-        temp_dir = None
         try:
             original_file_name = os.path.basename(file_path)
             is_xapk = original_file_name.endswith('.xapk')
-            
-            if is_xapk:
-                # 处理XAPK
-                apk_path, temp_dir = self.extract_xapk(file_path)
-                if not apk_path:
-                    return None
-            else:
-                apk_path = file_path
-
-            # 计算MD5（使用原始文件的MD5）
             md5 = get_md5(file_path)
             
-            # 获取包名（从提取的APK中获取）
+            # 准备上传目录结构
+            uploads_dir = self.mobsf_root / 'uploads'
+            app_dir = uploads_dir / md5
+            os.makedirs(app_dir, exist_ok=True)
+            
+            # 复制文件到上传目录
+            if is_xapk:
+                target_path = app_dir / f"{md5}.xapk"
+                shutil.copy2(file_path, target_path)
+                
+                # 处理XAPK
+                app_dic = {
+                    'md5': md5,
+                    'app_dir': app_dir,
+                }
+                if not self.handle_xapk(app_dic):
+                    logging.error("Failed to handle XAPK")
+                    return None
+                
+                # 从提取的APK获取包名
+                apk_path = app_dir / f"{md5}.apk"
+            else:
+                # 普通APK处理
+                target_path = app_dir / f"{md5}.apk"
+                shutil.copy2(file_path, target_path)
+                apk_path = target_path
+                
             package_name = self.get_package_name(apk_path)
             if not package_name:
                 logging.error("Could not get package name")
@@ -118,22 +135,14 @@ class QuickStaticAnalyzer:
                 
             logging.info(f"Processing {original_file_name} ({package_name})")
             
-            # 创建uploads目录下的文件夹和复制文件
-            upload_dir = Path('F:/MobSFCODE/Mobile-Security-Framework-MobSF-master/mobsf/uploads') / md5
-            os.makedirs(upload_dir, exist_ok=True)
-            target_path = upload_dir / f"{md5}.{original_file_name.split('.')[-1]}"  # 保持原始扩展名
-            
-            if not os.path.exists(target_path):
-                shutil.copy2(file_path, target_path)
-            
             # 保存到数据库
             # StaticAnalyzerAndroid
             static_entry = StaticAnalyzerAndroid(
                 FILE_NAME=original_file_name,
-                APP_TYPE='apk' if not is_xapk else 'xapk',
+                APP_TYPE='xapk' if is_xapk else 'apk',
                 MD5=md5,
                 PACKAGE_NAME=package_name,
-                APP_NAME=original_file_name,  # 使用文件名作为应用名
+                APP_NAME=original_file_name,
             )
             static_entry.save()
             
@@ -144,7 +153,7 @@ class QuickStaticAnalyzer:
                 APP_NAME=original_file_name,
                 PACKAGE_NAME=package_name,
                 ANALYZER='static_analyzer',
-                SCAN_TYPE='apk' if not is_xapk else 'xapk',
+                SCAN_TYPE='xapk' if is_xapk else 'apk',
             )
             recent_entry.save()
             
@@ -154,10 +163,6 @@ class QuickStaticAnalyzer:
         except Exception as e:
             logging.error(f"Error in quick_save_for_dynamic: {str(e)}")
             return None
-        finally:
-            # 清理临时目录
-            if temp_dir and os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
 
     def start_dynamic_analysis(self, md5):
         """启动动态分析"""
