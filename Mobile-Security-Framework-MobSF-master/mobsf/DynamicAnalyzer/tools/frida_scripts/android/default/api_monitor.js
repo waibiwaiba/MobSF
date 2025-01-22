@@ -52,6 +52,30 @@ Java.performNow(function () {
     send("[API Monitor] Loaded " + apis.length + " APIs from CSV.");
 });
 
+// 添加一个格式化时间的辅助函数（使用兼容的语法）
+function formatDate(date) {
+    function pad(num) {
+        return (num < 10 ? '0' : '') + num;
+    }
+    
+    function padMs(num) {
+        if (num < 10) return '00' + num;
+        if (num < 100) return '0' + num;
+        return num;
+    }
+    
+    var year = date.getFullYear();
+    var month = pad(date.getMonth() + 1);
+    var day = pad(date.getDate());
+    var hours = pad(date.getHours());
+    var minutes = pad(date.getMinutes());
+    var seconds = pad(date.getSeconds());
+    var milliseconds = padMs(date.getMilliseconds());
+    
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds + '.' + milliseconds;
+}
+
+
 // Dynamic Hooks
 function hook(api, callback) {
     var Exception = Java.use('java.lang.Exception');
@@ -86,6 +110,7 @@ function hook(api, callback) {
                     var message = {
                         // LX
                         // 我怀疑在这里加时间戳就可以了
+                        time: formatDate(new Date()),  // 添加时间戳字段
                         name: name,
                         class: clazz,
                         method: method,
