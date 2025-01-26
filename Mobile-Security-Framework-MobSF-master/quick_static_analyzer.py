@@ -20,7 +20,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mobsf.MobSF.settings")
 django.setup()
 
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid, RecentScansDB
-from mobsf.MobSF.utils import get_md5, is_file_exists
+from mobsf.MobSF.utils import get_md5_of_file, is_file_exists
 
 class QuickStaticAnalyzer:
     def __init__(self):
@@ -99,7 +99,7 @@ class QuickStaticAnalyzer:
         try:
             original_file_name = os.path.basename(file_path)
             is_xapk = original_file_name.endswith('.xapk')
-            md5 = get_md5(file_path)
+            md5 = get_md5_of_file(file_path)
             
             # 准备上传目录结构
             uploads_dir = self.mobsf_root / 'uploads'
