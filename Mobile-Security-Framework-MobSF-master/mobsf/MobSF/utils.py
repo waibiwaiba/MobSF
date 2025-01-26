@@ -208,6 +208,12 @@ def get_md5(data):
         data = data.encode('utf-8')
     return hashlib.md5(data).hexdigest()
 
+def get_md5_of_file(file_path):
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 def find_between(s, first, last):
     try:
