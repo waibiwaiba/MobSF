@@ -184,8 +184,8 @@ class DynamicAnalyzer:
                 text=True
             )
             
-            # 设置超时时间（比预期持续时间多给30秒）
-            timeout = duration + 30
+            # 设置超时时间（比预期持续时间多给10秒）
+            timeout = duration + 10
             
             # 等待进程完成或超时
             try:
@@ -283,7 +283,7 @@ def main():
     analyzer = DynamicAnalyzer()
     result = analyzer.run_dynamic_analysis(
         apk_path,
-        test_duration=30,  # 5分钟测试时间
+        test_duration=60,  # 5分钟测试时间
         monkey_seed=42,     # 固定随机种子
         event_delay=5     # 5毫秒事件延迟
     )
