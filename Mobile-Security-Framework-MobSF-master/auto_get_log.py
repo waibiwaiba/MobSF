@@ -233,6 +233,7 @@ class DynamicAnalyzer:
         log_message = f"""
         Analysis Results:
         ----------------
+        Start Time: {result['start_time']}
         Success: {result['success']}
         APK Path: {result['apk_path']}
         Hash: {result['hash']}
@@ -242,6 +243,7 @@ class DynamicAnalyzer:
         Monkey Seed: {result['monkey_seed']}
         Total Time: {result.get('total_time', 'N/A')} seconds
         Error: {result.get('error', 'None')}
+        Step: {result['step']}
         """
         self.logger.info(log_message)
         
