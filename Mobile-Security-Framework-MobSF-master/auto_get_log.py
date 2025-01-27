@@ -56,19 +56,36 @@ class DynamicAnalyzer:
         
     def setup_logging(self):
         """设置日志记录"""
-        log_dir = self.mobsf_root / 'logs'
-        log_dir.mkdir(exist_ok=True)
-        log_file = log_dir / 'dynamic_analysis.log'
+        if not self.output_directory:
+            raise ValueError("Output directory is required for logging")
+            
+        self.output_directory.mkdir(exist_ok=True, parents=True)
+        log_file = self.output_directory / 'dynamic_analysis.log'
         
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(log_file, mode='a'),
-                logging.StreamHandler()
-            ]
-        )
+        # Create formatter
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        
+        # Set up file handler
+        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+        file_handler.setFormatter(formatter)
+        
+        # Set up console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        
+        # Set up logger
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        
+        # Remove any existing handlers
+        self.logger.handlers.clear()
+        
+        # Add handlers
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
+        
+        # Prevent propagation to root logger
+        self.logger.propagate = False
 
     def load_previous_results(self) -> List[Dict]:
         """加载之前的分析结果"""
