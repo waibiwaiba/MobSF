@@ -73,26 +73,38 @@ class QuickStaticAnalyzer:
         return False
 
     def get_package_name(self, apk_path):
-        """使用AndroidManifest.xml获取包名"""
-        try:
-            import subprocess
-            from xml.dom import minidom
-
-            # 使用aapt获取AndroidManifest.xml
-            cmd = ['aapt', 'dump', 'xmltree', apk_path, 'AndroidManifest.xml']
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8', errors='ignore')
-            
-            # 解析输出，查找package属性
-            for line in output.split('\n'):
-                if 'package=' in line:
-                    # 使用正则表达式或字符串处理提取包名
-                    package = line.split('package="')[1].split('"')[0]
-                    return package
-                    
-            return None
-        except Exception as e:
-            logging.error(f"Error getting package name: {str(e)}")
-            return None
+        """获取APK包名,优先使用xmltree方式,失败时使用badging方式"""
+        def _get_by_xmltree():
+            try:
+                import subprocess
+                from xml.dom import minidom
+                cmd = ['aapt', 'dump', 'xmltree', apk_path, 'AndroidManifest.xml']
+                output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8', errors='ignore')
+                for line in output.split('\n'):
+                    if 'package=' in line:
+                        return line.split('package="')[1].split('"')[0]
+                return None
+            except Exception as e:
+                logging.error(f"Error getting package name: {str(e)}")
+                return None
+                
+        def _get_by_badging():
+            try:
+                import subprocess
+                cmd = ['aapt', 'dump', 'badging', apk_path]
+                output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8', errors='ignore')
+                for line in output.split('\n'):
+                    if line.startswith('package:'):
+                        return line.split("name='")[1].split("'")[0]
+                return None
+            except Exception as e:
+                logging.error(f"Error getting package name: {str(e)}")
+                return None
+        
+        package = _get_by_xmltree() or _get_by_badging()
+        if not package:
+            raise Exception("Failed to get package name using both xmltree and badging methods")
+        return package
 
     def quick_save_for_dynamic(self, file_path):
         """保存必要的数据到数据库"""
