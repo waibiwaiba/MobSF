@@ -7,7 +7,7 @@ def parse_api_logs(input_file, output_file):
    api_counter = collections.defaultdict(lambda: {'count': 0, 'name': ''})
    
    # 读取单行日志内容
-   with open(input_file, 'r') as f:
+   with open(input_file, 'r', encoding='utf-8') as f:
        content = f.read()
        # 分割每条日志记录
        log_entries = content.split('},{')
@@ -28,7 +28,7 @@ def parse_api_logs(input_file, output_file):
                continue
 
    # 按调用次数降序排序并写入
-   with open(output_file, 'w') as f:
+   with open(output_file, 'w', encoding='utf-8') as f:
        f.write("API名称,API接口,调用次数\n")
        sorted_apis = sorted(api_counter.items(), key=lambda x: x[1]['count'], reverse=True)
        for api, info in sorted_apis:
@@ -37,6 +37,6 @@ def parse_api_logs(input_file, output_file):
    return api_counter
 
 if __name__ == "__main__":
-   input_file = r"F:\MobSFCODE\Mobile-Security-Framework-MobSF-master\mobsf\uploads\8cfa5a4ced9805d4bf49403e0ede30f1\mobsf_api_monitor.txt"
-   output_file = r"F:\MobSFCODE\Mobile-Security-Framework-MobSF-master\mobsf\uploads\8cfa5a4ced9805d4bf49403e0ede30f1\api_statistics.csv"
+   input_file = r"F:\MobSFCODE\Mobile-Security-Framework-MobSF-master\mobsf\uploads\8b85d468603bbe35cd5ad50d3ca14081\mobsf_api_monitor.txt"
+   output_file = r"F:\MobSFCODE\Mobile-Security-Framework-MobSF-master\mobsf\uploads\8b85d468603bbe35cd5ad50d3ca14081\api_statistics.csv"
    results = parse_api_logs(input_file, output_file)

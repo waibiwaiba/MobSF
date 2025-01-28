@@ -90,7 +90,7 @@ class DynamicAnalyzer:
         """解析API日志并计数"""
         api_counter = collections.defaultdict(lambda: {'count': 0, 'name': ''})
         
-        with open(input_file, 'r') as f:
+        with open(input_file, 'r', encoding='utf-8') as f:
             content = f.read()
             log_entries = content.split('},{')
             
@@ -108,7 +108,7 @@ class DynamicAnalyzer:
                 except (json.JSONDecodeError, KeyError):
                     continue
 
-        with open(output_file, 'w') as f:
+        with open(output_file, 'w', encoding='utf-8') as f:
             f.write("API名称,API接口,调用次数\n")
             sorted_apis = sorted(api_counter.items(), key=lambda x: x[1]['count'], reverse=True)
             for api, info in sorted_apis:
