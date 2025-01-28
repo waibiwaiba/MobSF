@@ -14,7 +14,7 @@ from quick_static_analyzer import QuickStaticAnalyzer
 
 class DynamicAnalyzer:
     def __init__(self, mobsf_root: str = 'F:/MobSFCODE/Mobile-Security-Framework-MobSF-master/mobsf',
-                 android_version: str = None, output_directory: str = None):
+                 android_version: str = None, output_directory: str = None, monkey_test_duration: int = 45):
         self.api_key = "SeeWhatYouHaveRatherWhatYouDoNotHave"
         self.headers = {"Authorization": self.api_key}
         self.server = "http://localhost:8000"
@@ -22,7 +22,69 @@ class DynamicAnalyzer:
         self.android_version = android_version
         self.output_directory = Path(output_directory) if output_directory else None
         self.results_file = self.mobsf_root / 'analysis_results.json'
+        self.powershell_process = None  # 添加新属性跟踪PowerShell进程
+        self.monkey_test_duration = monkey_test_duration
         self.setup_logging()
+
+    def run_command(self, command, ignore_errors=False):
+        """运行命令行命令"""
+        try:
+            result = subprocess.run(command, capture_output=True, text=True, check=True)
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            if ignore_errors:
+                return e.stdout
+            else:
+                self.logger.error(f"Command '{' '.join(command)}' failed with error: {e.stderr}")
+                raise Exception(f"Command execution failed: {e.stderr}")
+
+    def wait_for_boot(self):
+        """等待模拟器完全启动"""
+        self.logger.info("Waiting for emulator to fully boot...")
+        for _ in range(60):
+            bootanim = self.run_command(["adb", "-s", "emulator-5554", "shell", "getprop", "init.svc.bootanim"], ignore_errors=True)
+            if "stopped" in bootanim:
+                boot_completed = self.run_command(["adb", "-s", "emulator-5554", "shell", "getprop", "sys.boot_completed"], ignore_errors=True)
+                if boot_completed.strip() == "1":
+                    self.logger.info("Emulator boot completed.")
+                    return True
+            time.sleep(5)
+        self.logger.error("Emulator failed to fully boot within the timeout period.")
+        return False
+
+    def start_avd(self):
+        """启动AVD"""
+        self.logger.info(f"Starting AVD: {self.android_version}")
+        start_avd_script = r"F:\MobSFCODE\Mobile-Security-Framework-MobSF-master\scripts\start_avd.ps1"
+        
+        # 使用subprocess.Popen启动PowerShell并保存进程引用
+        self.powershell_process = subprocess.Popen(
+            ["powershell", "-File", start_avd_script, self.android_version],
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        )
+        
+        if self.wait_for_boot():
+            self.logger.info(f"AVD {self.android_version} started successfully.")
+            return True
+        else:
+            self.logger.error(f"Failed to start AVD {self.android_version}.")
+            return False
+
+    def close_avd(self):
+        """关闭安卓虚拟机"""
+        try:
+            self.logger.info("Closing Android Virtual Device")
+            self.run_command(["adb", "emu", "kill"])
+            
+            # 关闭PowerShell进程
+            if self.powershell_process:
+                self.powershell_process.kill()
+                self.powershell_process = None
+                
+            return True
+        except Exception as e:
+            self.logger.error(f"Error closing AVD: {str(e)}")
+            return False
 
     def parse_api_logs(self, input_file: str, output_file: str) -> Dict:
         """解析API日志并计数"""
@@ -128,7 +190,7 @@ class DynamicAnalyzer:
         
         for index, app_path in enumerate(apps, 1):
             self.logger.info(f"Processing app {index}/{total_apps}: {app_path}")
-            result = self.run_dynamic_analysis(app_path, test_duration=45)
+            result = self.run_dynamic_analysis(app_path, test_duration=self.monkey_test_duration)
             if result['success']:
                 self.logger.info(f"Successfully analyzed app {index}/{total_apps}")
             else:
@@ -153,9 +215,11 @@ class DynamicAnalyzer:
             'step': 0  # Added step tracking
         }
         
+        avd_started = False
+        
         try:
             # Step 1: Static Analysis
-            self.logger.info("(1/6) Starting static analysis")
+            self.logger.info("(1/7) Starting static analysis")
             static_analyzer = QuickStaticAnalyzer()
             md5_hash = self._static_analysis(static_analyzer, apk_path)
             if not md5_hash:
@@ -167,10 +231,17 @@ class DynamicAnalyzer:
                 self.logger.info(f"App already analyzed for Android version {self.android_version}")
                 return result
 
-            # Step 2: Start Dynamic Analysis
-            self.logger.info("(2/6) Starting dynamic analysis")
-            if not self._start_dynamic_analysis(static_analyzer, md5_hash):
+            # Step 2: Start AVD
+            self.logger.info("(2/7) Starting Android Virtual Device")
+            if not self.start_avd():
                 result['step'] = 2
+                raise Exception("Failed to start Android Virtual Device")
+            avd_started = True
+
+            # Step 3: Start Dynamic Analysis
+            self.logger.info("(3/7) Starting dynamic analysis")
+            if not self._start_dynamic_analysis(static_analyzer, md5_hash):
+                result['step'] = 3
                 raise Exception("Failed to start dynamic analysis")
 
             # Get package name
@@ -182,28 +253,28 @@ class DynamicAnalyzer:
                 result['step'] = 2
                 raise Exception("Could not find package name in database")
 
-            # Step 3: Frida Instrumentation
-            self.logger.info("(3/6) Starting Frida instrumentation")
+            # Step 4: Frida Instrumentation
+            self.logger.info("(4/7) Starting Frida instrumentation")
             if not self._start_frida_instrumentation(md5_hash):
                 result['step'] = 3
                 raise Exception("Frida instrumentation failed")
 
-            # Step 4: Monkey Test
-            self.logger.info("(4/6) Running Monkey test")
+            # Step 5: Monkey Test
+            self.logger.info("(5/7) Running Monkey test")
             if not self._run_monkey_test(result['package_name'], md5_hash, 
                                        duration=test_duration, seed=monkey_seed, 
                                        throttle=event_delay):
                 result['step'] = 4
                 raise Exception("Monkey test failed")
 
-            # Step 5: Stop Analysis
-            self.logger.info("(5/6) Stopping dynamic analysis")
+            # Step 6: Stop Analysis
+            self.logger.info("(6/7) Stopping dynamic analysis")
             if not self._stop_dynamic_analysis(md5_hash):
                 result['step'] = 5
                 raise Exception("Failed to stop dynamic analysis")
 
-            # Step 6: Organize Files
-            self.logger.info("(6/6) Organizing output files")
+            # Step 7: Organize Files
+            self.logger.info("(7/7) Organizing output files")
             self._organize_output_files(md5_hash)
             
             result['success'] = True
@@ -213,6 +284,8 @@ class DynamicAnalyzer:
             self.logger.error(f"Error during dynamic analysis at step {result['step']}: {error_msg}")
             result['error'] = error_msg
         finally:
+            if avd_started:
+                self.close_avd()
             result['total_time'] = time.time() - start_time
             self._log_analysis_result(result)
             self.save_result(result)
@@ -305,8 +378,8 @@ class DynamicAnalyzer:
                 text=True
             )
             
-            # 设置超时时间（比预期持续时间多给10秒）
-            timeout = duration + 10
+            # 设置超时时间（比预期持续时间多给15秒）
+            timeout = duration + 15
             
             # 等待进程完成或超时
             try:
@@ -390,21 +463,36 @@ class DynamicAnalyzer:
                 
         shutil.rmtree(temp_dir)
 
-def main():
-    if len(sys.argv) != 4:
-        print("Usage: python dynamic_analyzer.py <android_version> <apps_directory> <output_directory>")
-        sys.exit(1)
+# def main():
+#     if len(sys.argv) != 4:
+#         print("Usage: python dynamic_analyzer.py <android_version> <apps_directory> <output_directory>")
+#         sys.exit(1)
         
-    android_version = sys.argv[1]
-    apps_directory = sys.argv[2]
-    output_directory = sys.argv[3]
+#     android_version = sys.argv[1]
+#     apps_directory = sys.argv[2]
+#     output_directory = sys.argv[3]
     
-    if not os.path.exists(apps_directory):
-        print("Apps directory not found!")
-        sys.exit(1)
+#     if not os.path.exists(apps_directory):
+#         print("Apps directory not found!")
+#         sys.exit(1)
         
-    analyzer = DynamicAnalyzer(android_version=android_version, output_directory=output_directory)
-    analyzer.analyze_all_apps(apps_directory)
+#     analyzer = DynamicAnalyzer(android_version=android_version, output_directory=output_directory)
+#     analyzer.analyze_all_apps(apps_directory)
+
+def main():
+    android_version = "25_google_apis_x64"
+    
+    for i in range(3, 32):
+        folder_num = f"{i:02d}"  # Convert to 2-digit format (03, 04, etc.)
+        apps_directory = f"F:\\Downloads\\Adware.tar\\Adware\\{folder_num}"
+        output_directory = f"C:\\Users\\Administrator\\Desktop\\TODO\\api25\\adware\\{folder_num}"
+        
+        if not os.path.exists(apps_directory):
+            print(f"Apps directory not found: {apps_directory}")
+            continue
+            
+        analyzer = DynamicAnalyzer(android_version=android_version, output_directory=output_directory, monkey_test_duration=240)
+        analyzer.analyze_all_apps(apps_directory)
 
 if __name__ == "__main__":
     main()
