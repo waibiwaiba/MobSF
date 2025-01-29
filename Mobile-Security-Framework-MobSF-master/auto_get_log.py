@@ -93,7 +93,8 @@ class DynamicAnalyzer:
         with open(input_file, 'r', encoding='utf-8') as f:
             content = f.read()
             log_entries = content.split('},{')
-            
+            # 修复最后一个条目的格式
+            log_entries[-1] = log_entries[-1].rstrip(',')
             for entry in log_entries:
                 try:
                     if not entry.startswith('{'):
@@ -482,7 +483,7 @@ class DynamicAnalyzer:
 def main():
     android_version = "25_google_apis_x64"
     
-    for i in range(3, 32):
+    for i in range(6, 32):
         folder_num = f"{i:02d}"  # Convert to 2-digit format (03, 04, etc.)
         apps_directory = f"F:\\Downloads\\Adware.tar\\Adware\\{folder_num}"
         output_directory = f"C:\\Users\\Administrator\\Desktop\\TODO\\api25\\adware\\{folder_num}"
