@@ -66,8 +66,18 @@ def main():
     #     sys.exit(1)
         
     # base_path = sys.argv[1]
-    base_path = r"C:\Users\Administrator\Desktop\TODO\api25\adware\06"
-    output_file = "api_analysis_results.txt"
+    num = "02"
+    # base_path = fr"C:\Users\Administrator\Desktop\TODO\api25\adware\{num}"
+    # output_file = fr"C:\Users\Administrator\Desktop\TODO\api25\adware\{num}\api_analysis_results.txt"
+    
+    # base_path = fr"C:\Users\Administrator\Desktop\TODO\api25\banking\{num}"
+    # output_file = fr"C:\Users\Administrator\Desktop\TODO\api25\banking\{num}\api_analysis_results.txt"
+    
+    # base_path = fr"C:\Users\Administrator\Desktop\TODO\api25\riskware\{num}"
+    # output_file = fr"C:\Users\Administrator\Desktop\TODO\api25\riskware\{num}\api_analysis_results.txt"
+    
+    base_path = fr"C:\Users\Administrator\Desktop\TODO\api25\sms\{num}"
+    output_file = fr"C:\Users\Administrator\Desktop\TODO\api25\sms\{num}\api_analysis_results.txt"
     
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write("文件夹路径,首次调用时间,最后调用时间,时间差(秒),API总调用数,每秒平均调用数\n")

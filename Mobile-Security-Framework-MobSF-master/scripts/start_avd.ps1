@@ -58,7 +58,9 @@ if (-not $AVD_FOUND) {
 
 
 # -NoNewWindow
-Start-Process  -FilePath $EMULATOR_PATH -ArgumentList "-avd $AVD_NAME -writable-system -no-snapshot -wipe-data -port $START_PORT"
+# Start-Process  -NoNewWindow -Wait -FilePath $EMULATOR_PATH -ArgumentList "-avd $AVD_NAME -writable-system -no-snapshot -wipe-data -port $START_PORT"
+# 这样写可以被python脚本kill掉之前的进程
+& "$EMULATOR_PATH" -avd $AVD_NAME -writable-system -no-snapshot -wipe-data -port $START_PORT
 Write-Output "Starting AVD $AVD_NAME on port $START_PORT."
 
 # # Wait for the emulator to boot completely

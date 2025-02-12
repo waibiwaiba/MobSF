@@ -1,7 +1,8 @@
 import os
 
 # 定义目标目录
-target_dir = r"F:\Downloads\Adware.tar\Adware"
+# target_dir = r"F:\Downloads\Adware.tar\Adware"
+target_dir = r"F:\Downloads\SMS2.tar\SMS2\SMS"
 
 # 确保目录存在
 if not os.path.exists(target_dir):

@@ -43,5 +43,9 @@ def move_apk_files_in_batches(source_dir, batch_size=50):
     print(f"All files have been moved into {num_batches} subdirectories.")
 
 # 调用函数
-source_directory = r"F:\Downloads\Adware.tar\Adware"
+# source_directory = r"F:\Downloads\Adware.tar\Adware"
+# source_directory = r"F:\Downloads\Banking.tar\Banking"
+# source_directory = r"F:\Downloads\Riskware.tar\Riskware"
+source_directory = r"F:\Downloads\SMS2.tar\SMS2\SMS"
+
 move_apk_files_in_batches(source_directory)

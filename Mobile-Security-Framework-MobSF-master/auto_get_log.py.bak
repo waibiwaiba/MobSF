@@ -7,7 +7,6 @@ import logging
 import requests
 import subprocess
 import collections
-import socket
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, List, Any
@@ -15,7 +14,7 @@ from quick_static_analyzer import QuickStaticAnalyzer
 
 class DynamicAnalyzer:
     def __init__(self, mobsf_root: str = 'F:/MobSFCODE/Mobile-Security-Framework-MobSF-master/mobsf',
-                 android_version: str = None, output_directory: str = None, monkey_test_duration: int = 45):
+                 android_version: str = None, output_directory: str = None):
         self.api_key = "SeeWhatYouHaveRatherWhatYouDoNotHave"
         self.headers = {"Authorization": self.api_key}
         self.server = "http://localhost:8000"
@@ -23,117 +22,16 @@ class DynamicAnalyzer:
         self.android_version = android_version
         self.output_directory = Path(output_directory) if output_directory else None
         self.results_file = self.mobsf_root / 'analysis_results.json'
-        self.powershell_process = None  # 添加新属性跟踪PowerShell进程
-        self.monkey_test_duration = monkey_test_duration
         self.setup_logging()
-
-    def run_command(self, command, ignore_errors=False):
-        """运行命令行命令"""
-        try:
-            result = subprocess.run(command, capture_output=True, text=True, check=True)
-            return result.stdout
-        except subprocess.CalledProcessError as e:
-            if ignore_errors:
-                return e.stdout
-            else:
-                self.logger.error(f"Command '{' '.join(command)}' failed with error: {e.stderr}")
-                raise Exception(f"Command execution failed: {e.stderr}")
-
-    def wait_for_boot(self):
-        """等待模拟器完全启动"""
-        self.logger.info("Waiting for emulator to fully boot...")
-        for _ in range(60):
-            bootanim = self.run_command(["adb", "-s", "emulator-5554", "shell", "getprop", "init.svc.bootanim"], ignore_errors=True)
-            if "stopped" in bootanim:
-                boot_completed = self.run_command(["adb", "-s", "emulator-5554", "shell", "getprop", "sys.boot_completed"], ignore_errors=True)
-                if boot_completed.strip() == "1":
-                    self.logger.info("Emulator boot completed.")
-                    return True
-            time.sleep(5)
-        self.logger.error("Emulator failed to fully boot within the timeout period.")
-        return False
-
-    def start_avd(self):
-        """启动AVD并增加健壮的等待逻辑"""
-        self.logger.info(f"Starting AVD: {self.android_version}")
-        start_avd_script = r"F:\MobSFCODE\Mobile-Security-Framework-MobSF-master\scripts\start_avd.ps1"
-        
-        try:
-            # 启动模拟器并保存进程引用
-            self.powershell_process = subprocess.Popen(
-                ["powershell", "-File", start_avd_script, self.android_version],
-                creationflags=subprocess.CREATE_NEW_CONSOLE
-            )
-            
-            # 原有等待系统启动的逻辑
-            if self.wait_for_boot():
-                self.logger.info(f"AVD {self.android_version} started successfully.")
-                return True
-            else:
-                self.logger.error("Emulator boot timeout")
-                return False
-                
-        except Exception as e:
-            self.logger.error(f"Error starting AVD: {str(e)}")
-            return False
-
-    def close_avd(self):
-        """关闭模拟器并确保进程终止"""
-        self.logger.info("Closing Android Virtual Device")
-        success = False
-        
-        try:
-            # 1. 优先尝试通过ADB正常关闭
-            self.run_command(["adb", "-s", "emulator-5554", "emu", "kill"])
-            time.sleep(1)  # 等待正常关闭
-            
-            # 2. 检查模拟器进程是否仍在运行
-            if self._is_emulator_running():
-                self.logger.warning("Emulator still running, forcing kill...")
-                self._kill_qemu_processes()
-                
-            # 3. 终止PowerShell进程
-            if self.powershell_process:
-                self.powershell_process.kill()
-                self.powershell_process = None
-                
-            # 4. 二次检查确保进程终止
-            if not self._is_emulator_running():
-                success = True
-            else:
-                self.logger.error("Failed to kill emulator processes")
-                
-        except Exception as e:
-            self.logger.error(f"Error closing AVD: {str(e)}")
-            
-        return success
-
-    def _is_emulator_running(self):
-        """检查QEMU进程是否仍在运行"""
-        check = subprocess.run(
-            ["tasklist", "/FI", "IMAGENAME eq qemu-system-x86_64.exe"],
-            capture_output=True, text=True
-        )
-        return "qemu-system-x86_64.exe" in check.stdout
-
-    def _kill_qemu_processes(self):
-        """强制终止所有QEMU进程"""
-        subprocess.run(
-            ["taskkill", "/IM", "qemu-system-x86_64.exe", "/F"],
-            capture_output=True, text=True
-        )
-        time.sleep(2)  # 确保进程终止
-
 
     def parse_api_logs(self, input_file: str, output_file: str) -> Dict:
         """解析API日志并计数"""
         api_counter = collections.defaultdict(lambda: {'count': 0, 'name': ''})
         
-        with open(input_file, 'r', encoding='utf-8') as f:
+        with open(input_file, 'r') as f:
             content = f.read()
             log_entries = content.split('},{')
-            # 修复最后一个条目的格式
-            log_entries[-1] = log_entries[-1].rstrip(',')
+            
             for entry in log_entries:
                 try:
                     if not entry.startswith('{'):
@@ -148,7 +46,7 @@ class DynamicAnalyzer:
                 except (json.JSONDecodeError, KeyError):
                     continue
 
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, 'w') as f:
             f.write("API名称,API接口,调用次数\n")
             sorted_apis = sorted(api_counter.items(), key=lambda x: x[1]['count'], reverse=True)
             for api, info in sorted_apis:
@@ -158,36 +56,19 @@ class DynamicAnalyzer:
         
     def setup_logging(self):
         """设置日志记录"""
-        if not self.output_directory:
-            raise ValueError("Output directory is required for logging")
-            
-        self.output_directory.mkdir(exist_ok=True, parents=True)
-        log_file = self.output_directory / 'dynamic_analysis.log'
+        log_dir = self.mobsf_root / 'logs'
+        log_dir.mkdir(exist_ok=True)
+        log_file = log_dir / 'dynamic_analysis.log'
         
-        # Create formatter
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        
-        # Set up file handler
-        file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-        file_handler.setFormatter(formatter)
-        
-        # Set up console handler
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        
-        # Set up logger
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler(log_file, mode='a'),
+                logging.StreamHandler()
+            ]
+        )
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        
-        # Remove any existing handlers
-        self.logger.handlers.clear()
-        
-        # Add handlers
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
-        
-        # Prevent propagation to root logger
-        self.logger.propagate = False
 
     def load_previous_results(self) -> List[Dict]:
         """加载之前的分析结果"""
@@ -225,17 +106,16 @@ class DynamicAnalyzer:
     def analyze_all_apps(self, apps_directory: str):
         """分析目录中的所有应用"""
         apps = self.find_apps(apps_directory)
-        total_apps = len(apps)
-        self.logger.info(f"Found {total_apps} apps in {apps_directory}")
+        self.logger.info(f"Found {len(apps)} apps in {apps_directory}")
         
-        for index, app_path in enumerate(apps, 1):
-            self.logger.info(f"Processing app {index}/{total_apps}: {app_path}")
-            result = self.run_dynamic_analysis(app_path, test_duration=self.monkey_test_duration)
+        for app_path in apps:
+            self.logger.info(f"Processing {app_path}")
+            # 设置monkey测试时间为45秒
+            result = self.run_dynamic_analysis(app_path, test_duration=45)
             if result['success']:
-                self.logger.info(f"Successfully analyzed app {index}/{total_apps}")
+                self.logger.info(f"Successfully analyzed {app_path}")
             else:
-                self.logger.error(f"Failed to analyze app {index}/{total_apps} at step {result['step']}: {result['error']}")
-
+                self.logger.error(f"Failed to analyze {app_path}: {result['error']}")
 
     def run_dynamic_analysis(self, apk_path: str, test_duration: int = 300, 
                            monkey_seed: int = 42, event_delay: int = 5) -> Dict[str, Any]:
@@ -251,102 +131,68 @@ class DynamicAnalyzer:
             'test_duration': test_duration,
             'monkey_seed': monkey_seed,
             'error': None,
-            'android_version': self.android_version,
-            'step': 0  # Added step tracking
+            'android_version': self.android_version
         }
         
-        avd_started = False
-        
         try:
-            # Step 1: Static Analysis
-            self.logger.info("(1/7) Starting static analysis")
             static_analyzer = QuickStaticAnalyzer()
-            md5_hash = self._static_analysis(static_analyzer, apk_path)
+            self.logger.info(f"Starting static analysis for {apk_path}")
+            md5_hash = static_analyzer.quick_save_for_dynamic(apk_path)
             if not md5_hash:
-                result['step'] = 1
                 raise Exception("Static analysis failed")
+                
             result['hash'] = md5_hash
             
             if self.is_app_analyzed(apk_path, md5_hash):
                 self.logger.info(f"App already analyzed for Android version {self.android_version}")
                 return result
-
-            # Step 2: Start AVD
-            self.logger.info("(2/7) Starting Android Virtual Device")
-            if not self.start_avd():
-                result['step'] = 2
-                raise Exception("Failed to start Android Virtual Device")
-            avd_started = True
-
-            # Step 3: Start Dynamic Analysis
-            self.logger.info("(3/7) Starting dynamic analysis")
-            if not self._start_dynamic_analysis(static_analyzer, md5_hash):
-                result['step'] = 3
-                raise Exception("Failed to start dynamic analysis")
-
-            # Get package name
+                
             from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
             latest_record = StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).last()
             if latest_record:
                 result['package_name'] = latest_record.PACKAGE_NAME
             else:
-                result['step'] = 2
                 raise Exception("Could not find package name in database")
-
-            # Step 4: Frida Instrumentation
-            self.logger.info("(4/7) Starting Frida instrumentation")
+            
+            self.logger.info(f"Starting dynamic analysis for hash: {md5_hash}")
+            if not static_analyzer.start_dynamic_analysis(md5_hash):
+                raise Exception("Failed to start dynamic analysis")
+                
+            self.logger.info("Starting Frida instrumentation")
             if not self._start_frida_instrumentation(md5_hash):
-                result['step'] = 3
                 raise Exception("Frida instrumentation failed")
-
-            # Step 5: Monkey Test
-            self.logger.info("(5/7) Running Monkey test")
+                
+            self.logger.info("Starting Monkey test")
             if not self._run_monkey_test(result['package_name'], md5_hash, 
                                        duration=test_duration, seed=monkey_seed, 
                                        throttle=event_delay):
-                result['step'] = 4
                 raise Exception("Monkey test failed")
-
-            # Step 6: Stop Analysis
-            self.logger.info("(6/7) Stopping dynamic analysis")
+                
+            self.logger.info("Stopping dynamic analysis")
             if not self._stop_dynamic_analysis(md5_hash):
-                result['step'] = 5
                 raise Exception("Failed to stop dynamic analysis")
-
-            # Step 7: Organize Files
-            self.logger.info("(7/7) Organizing output files")
+                
+            self.logger.info("Organizing output files")
             self._organize_output_files(md5_hash)
             
             result['success'] = True
             
         except Exception as e:
             error_msg = str(e)
-            self.logger.error(f"Error during dynamic analysis at step {result['step']}: {error_msg}")
+            self.logger.error(f"Error during dynamic analysis: {error_msg}")
             result['error'] = error_msg
         finally:
-            if avd_started:
-                self.close_avd()
             result['total_time'] = time.time() - start_time
             self._log_analysis_result(result)
             self.save_result(result)
-            if result['hash']:
-                self._organize_output_files(result['hash'])
+            self._organize_output_files(md5_hash)
         return result
-
-    def _static_analysis(self, static_analyzer: QuickStaticAnalyzer, apk_path: str) -> Optional[str]:
-        """执行静态分析"""
-        return static_analyzer.quick_save_for_dynamic(apk_path)
-
-    def _start_dynamic_analysis(self, static_analyzer: QuickStaticAnalyzer, md5_hash: str) -> bool:
-        """启动动态分析"""
-        return static_analyzer.start_dynamic_analysis(md5_hash)
 
     def _log_analysis_result(self, result: Dict[str, Any]) -> None:
         """记录分析结果"""
         log_message = f"""
         Analysis Results:
         ----------------
-        Start Time: {result['start_time']}
         Success: {result['success']}
         APK Path: {result['apk_path']}
         Hash: {result['hash']}
@@ -356,7 +202,6 @@ class DynamicAnalyzer:
         Monkey Seed: {result['monkey_seed']}
         Total Time: {result.get('total_time', 'N/A')} seconds
         Error: {result.get('error', 'None')}
-        Step: {result['step']}
         """
         self.logger.info(log_message)
         
@@ -415,12 +260,11 @@ class DynamicAnalyzer:
                 command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
-                encoding='utf-8',
+                text=True
             )
             
-            # 设置超时时间（比预期持续时间多给15秒）
-            timeout = duration + 15
+            # 设置超时时间（比预期持续时间多给10秒）
+            timeout = duration + 10
             
             # 等待进程完成或超时
             try:
@@ -504,46 +348,21 @@ class DynamicAnalyzer:
                 
         shutil.rmtree(temp_dir)
 
-# def main():
-#     if len(sys.argv) != 4:
-#         print("Usage: python dynamic_analyzer.py <android_version> <apps_directory> <output_directory>")
-#         sys.exit(1)
-        
-#     android_version = sys.argv[1]
-#     apps_directory = sys.argv[2]
-#     output_directory = sys.argv[3]
-    
-#     if not os.path.exists(apps_directory):
-#         print("Apps directory not found!")
-#         sys.exit(1)
-        
-#     analyzer = DynamicAnalyzer(android_version=android_version, output_directory=output_directory)
-#     analyzer.analyze_all_apps(apps_directory)
-
 def main():
-    android_version = "25_google_apis_x64"
+    if len(sys.argv) != 4:
+        print("Usage: python dynamic_analyzer.py <android_version> <apps_directory> <output_directory>")
+        sys.exit(1)
+        
+    android_version = sys.argv[1]
+    apps_directory = sys.argv[2]
+    output_directory = sys.argv[3]
     
-    for i in range(3, 32):
-        folder_num = f"{i:02d}"  # Convert to 2-digit format (03, 04, etc.)
-        # apps_directory = f"F:\\Downloads\\Adware.tar\\Adware\\{folder_num}" # 01-32
-        # output_directory = f"C:\\Users\\Administrator\\Desktop\\TODO\\api25\\adware\\{folder_num}"
+    if not os.path.exists(apps_directory):
+        print("Apps directory not found!")
+        sys.exit(1)
         
-        # apps_directory = f"F:\\Downloads\\Banking.tar\\Banking\\{folder_num}" # 01-51, 上次跑到02没跑完
-        # output_directory = f"C:\\Users\\Administrator\\Desktop\\TODO\\api25\\banking\\{folder_num}"
-
-        apps_directory = f"F:\\Downloads\\Riskware.tar\\Riskware\\{folder_num}" # 01-88, 上次跑到03没跑完
-        output_directory = f"C:\\Users\\Administrator\\Desktop\\TODO\\api25\\riskware\\{folder_num}"
-        
-        # apps_directory = f"F:\\Downloads\\SMS2.tar\\SMS2\\SMS\\{folder_num}" # 01-97，跑到02没跑完
-        # output_directory = f"C:\\Users\\Administrator\\Desktop\\TODO\\api25\\sms\\{folder_num}"
-        
-        
-        if not os.path.exists(apps_directory):
-            print(f"Apps directory not found: {apps_directory}")
-            continue
-            
-        analyzer = DynamicAnalyzer(android_version=android_version, output_directory=output_directory, monkey_test_duration=240)
-        analyzer.analyze_all_apps(apps_directory)
+    analyzer = DynamicAnalyzer(android_version=android_version, output_directory=output_directory)
+    analyzer.analyze_all_apps(apps_directory)
 
 if __name__ == "__main__":
     main()
